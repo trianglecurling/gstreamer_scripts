@@ -13,7 +13,7 @@ sleep 3
 
 # Order : right first, left last
 gst-launch-0.10 -e -v \
-  # Camera 1
+  # Camera 1 - make sure you change your IP address/password/stream source to match your setup.
   rtspsrc location=rtsp://root:PASSWORD@192.168.0.112:554/axis-media/media.amp?videocodec=h264 is-live=true \
     ! $H264_DEPAY_10 \
     ! $H264_DECODE_10 \
