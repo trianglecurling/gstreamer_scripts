@@ -1,0 +1,73 @@
+#!/bin/sh
+H264_DEPAY_9="rtph264depay ! video/x-h264,width=720,height=1280,framerate=30/1"
+H264_DECODE_9="nv_omx_h264dec ! video/x-nv-yuv,format=(fourcc)NV12,framerate=30/1,width=720,height=1280"
+H264_CONVERT_9="nvvidconv ! video/x-raw-yuv,format=(fourcc)I420,framerate=30/1,width=450,height=800"
+H264_DEPAY_10="rtph264depay ! video/x-h264,width=500,height=800,framerate=30/1"
+H264_DECODE_10="nv_omx_h264dec ! video/x-nv-yuv,format=(fourcc)NV12,framerate=30/1,width=500,height=800"
+H264_CONVERT_10="nvvidconv ! video/x-raw-yuv,format=(fourcc)I420,framerate=30/1,width=500,height=800"
+H264_QUEUE="queue leaky=1 max-size-time=25000"
+#    ! videoflip method=rotate-180 \
+
+DISPLAY=:0 xrandr --output HDMI-0 --mode 1920x1080 --rate 30
+sleep 3
+
+# Order : right first, left last
+gst-launch-0.10 -e -v \
+  rtspsrc location=rtsp://root:PASSWORD@192.168.0.112:554/axis-media/media.amp?videocodec=h264 is-live=true \
+    ! $H264_DEPAY_10 \
+    ! $H264_DECODE_10 \
+    ! $H264_CONVERT_10 \
+    ! videobox fill=0 left=-1420 top=-280 border-alpha=0 \
+    ! $H264_QUEUE \
+    ! vmix.sink_4 \
+  rtspsrc location=rtsp://root:PASSWORD@192.168.0.142:554/axis-media/media.amp?videocodec=h264 is-live=true \
+    ! $H264_DEPAY_9 \
+    ! $H264_DECODE_9 \
+    ! $H264_CONVERT_9 \
+    ! videobox fill=0 left=-970 top=-280 border-alpha=0 \
+    ! $H264_QUEUE \
+    ! vmix.sink_3 \
+  filesrc location=/home/ubuntu/upper_right_text.txt \
+    ! txtur. \
+  filesrc location="/home/ubuntu/950x280_black.jpg" \
+    ! decodebin \
+    ! nvvidconv \
+    ! imagefreeze \
+    ! textoverlay font-desc="Sans 30px" name=txtur valignment=center deltay=0 shadow=false color=0xffffd700 \
+    ! videobox fill=0 left=-970 border-alpha=0 \
+    ! nvvidconv \
+    ! vmix.sink_6 \
+  filesrc location="/home/ubuntu/20x1080_black.jpg" \
+    ! decodebin \
+    ! nvvidconv \
+    ! imagefreeze \
+    ! videobox fill=0 left=-950 border-alpha=0 \
+    ! nvvidconv \
+    ! vmix.sink_7 \
+  filesrc location=/home/ubuntu/lower_left_text.txt \
+    ! txtll. \
+  filesrc location="/home/ubuntu/950x280_black.jpg" \
+    ! decodebin \
+    ! nvvidconv \
+    ! imagefreeze \
+    ! textoverlay font-desc="Sans 30px" name=txtll valignment=center deltay=0 shadow=false color=0xffff4500 \
+    ! videobox fill=0 top=-800 border-alpha=0 \
+    ! nvvidconv \
+    ! vmix.sink_5 \
+  rtspsrc location=rtsp://root:PASSWORD@192.168.0.132:554/axis-media/media.amp?videocodec=h264 is-live=true \
+    ! $H264_DEPAY_9 \
+    ! $H264_DECODE_9 \
+    ! $H264_CONVERT_9 \
+    ! videobox fill=0 left=-500 border-alpha=0 \
+    ! $H264_QUEUE \
+    ! vmix.sink_2 \
+  rtspsrc location=rtsp://root:PASSWORD@192.168.0.122:554/axis-media/media.amp?videocodec=h264 is-live=true \
+    ! $H264_DEPAY_10 \
+    ! $H264_DECODE_10 \
+    ! $H264_CONVERT_10 \
+    ! videobox fill=0 border-alpha=0 \
+    ! $H264_QUEUE \
+    ! vmix.sink_1 \
+  videomixer name=vmix \
+    ! nv_omx_hdmi_videosink sync=false
+
