@@ -13,6 +13,7 @@ sleep 3
 
 # Order : right first, left last
 gst-launch-0.10 -e -v \
+  # Camera 1
   rtspsrc location=rtsp://root:PASSWORD@192.168.0.112:554/axis-media/media.amp?videocodec=h264 is-live=true \
     ! $H264_DEPAY_10 \
     ! $H264_DECODE_10 \
@@ -20,6 +21,7 @@ gst-launch-0.10 -e -v \
     ! videobox fill=0 left=-1420 top=-280 border-alpha=0 \
     ! $H264_QUEUE \
     ! vmix.sink_4 \
+  # Camera 2
   rtspsrc location=rtsp://root:PASSWORD@192.168.0.142:554/axis-media/media.amp?videocodec=h264 is-live=true \
     ! $H264_DEPAY_9 \
     ! $H264_DECODE_9 \
@@ -27,8 +29,10 @@ gst-launch-0.10 -e -v \
     ! videobox fill=0 left=-970 top=-280 border-alpha=0 \
     ! $H264_QUEUE \
     ! vmix.sink_3 \
+  # Text file showing player names (yellow team), 4 lines (1 name per line)
   filesrc location=/home/ubuntu/upper_right_text.txt \
     ! txtur. \
+  # Black background for the text, then show the text with textoverlay
   filesrc location="/home/ubuntu/950x280_black.jpg" \
     ! decodebin \
     ! nvvidconv \
@@ -37,6 +41,7 @@ gst-launch-0.10 -e -v \
     ! videobox fill=0 left=-970 border-alpha=0 \
     ! nvvidconv \
     ! vmix.sink_6 \
+  # 20px vertical black border between camera views
   filesrc location="/home/ubuntu/20x1080_black.jpg" \
     ! decodebin \
     ! nvvidconv \
@@ -44,8 +49,10 @@ gst-launch-0.10 -e -v \
     ! videobox fill=0 left=-950 border-alpha=0 \
     ! nvvidconv \
     ! vmix.sink_7 \
+  # Text file showing player names (red team), 4 lines (1 name per line)
   filesrc location=/home/ubuntu/lower_left_text.txt \
     ! txtll. \
+  # Black background for the text, then show the text with textoverlay
   filesrc location="/home/ubuntu/950x280_black.jpg" \
     ! decodebin \
     ! nvvidconv \
@@ -54,6 +61,7 @@ gst-launch-0.10 -e -v \
     ! videobox fill=0 top=-800 border-alpha=0 \
     ! nvvidconv \
     ! vmix.sink_5 \
+  # Camera 3
   rtspsrc location=rtsp://root:PASSWORD@192.168.0.132:554/axis-media/media.amp?videocodec=h264 is-live=true \
     ! $H264_DEPAY_9 \
     ! $H264_DECODE_9 \
@@ -61,6 +69,7 @@ gst-launch-0.10 -e -v \
     ! videobox fill=0 left=-500 border-alpha=0 \
     ! $H264_QUEUE \
     ! vmix.sink_2 \
+  # Camera 4
   rtspsrc location=rtsp://root:PASSWORD@192.168.0.122:554/axis-media/media.amp?videocodec=h264 is-live=true \
     ! $H264_DEPAY_10 \
     ! $H264_DECODE_10 \
